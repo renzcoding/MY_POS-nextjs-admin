@@ -1,0 +1,351 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  firstname          String?
+  lastname           String?
+  username           String               @unique
+  email              String               @unique
+  password           String               @map("user_password")
+  role               String?
+  address            String?
+  position           String?
+  phone              String?
+  image              String?
+  status             String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Post               Post[]
+  Payment_Method     Payment_Method[]
+  Order              Order[]
+  Product            Product[]
+  Product_Category   Product_Category[]
+  Supplier           Supplier[]
+  Customer           Customer[]
+  Transaction_type   Transaction_type[]
+  Transaction_status Transaction_status[]
+  Cashier            Cashier[]
+  Product_Condition  Product_Condition[]
+  Product_Size       Product_Size[]
+  Product_Type       Product_Type[]
+  Product_Unit       Product_Unit[]
+  Product_Weight     Product_Weight[]
+  Product_Images     Product_Images[]
+  Product_Variant    Product_Variant[]
+}
+
+model Product {
+  id                Int                @id @default(autoincrement())
+  name              String
+  categoryId        Int?
+  price_sales       Int?
+  price_purchase    Int?
+  tax_sales         Int?
+  tax_purchase      Int?
+  stock             Int?
+  supplierId        Int?
+  conditionId       Int?
+  unitId            Int?
+  sizeId            Int?
+  typeId            Int?
+  weight            Int?
+  barcode           String?
+  discount          String?
+  image             String?
+  description       String?
+  status            String?
+  userId            Int?
+  isActive          Boolean            @default(true)
+  isPopular         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  category          Product_Category?  @relation(fields: [categoryId], references: [id])
+  condition         Product_Condition? @relation(fields: [conditionId], references: [id])
+  size              Product_Size?      @relation(fields: [sizeId], references: [id])
+  type              Product_Type?      @relation(fields: [typeId], references: [id])
+  unit              Product_Unit?      @relation(fields: [unitId], references: [id])
+  supplier          Supplier?          @relation(fields: [supplierId], references: [id])
+  user              User?              @relation(fields: [userId], references: [id])
+  OrderDetail       OrderDetail[]
+  Post              Post[]
+  Images            Product_Images[]
+  Product_Weight    Product_Weight?    @relation(fields: [product_WeightId], references: [id])
+  product_WeightId  Int?
+  Product_Variant   Product_Variant?   @relation(fields: [product_VariantId], references: [id])
+  product_VariantId Int?
+}
+
+model Product_Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+}
+
+model Product_Condition {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_condition")
+}
+
+model Product_Size {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_size") // 
+}
+
+model Product_Type {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_type") // 
+}
+
+model Product_Unit {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_unit") // 
+}
+
+model Product_Weight {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_weight") // 
+}
+
+model Product_Images {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  url         String?
+  productId   Int?
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_images") // 
+}
+
+model Product_Variant {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  price       Int?
+  productId   Int?
+  image       Int?
+  description String?
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("product_variant") // 
+}
+
+model Cashier {
+  id        Int        @id @default(autoincrement())
+  name      String?
+  username  String?
+  email     String     @unique
+  password  String
+  phone     String?
+  address   String?
+  contact   String?
+  status    String?
+  userId    Int?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User?      @relation(fields: [userId], references: [id])
+  orders    Order[] // Optional: if each order is linked to a cashier
+  Customer  Customer[]
+}
+
+model Supplier {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  email     String    @unique
+  phone     String?
+  address   String?
+  contact   String?
+  status    String?
+  userId    Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  userId    Int?
+  cashierId Int?
+  status    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  user      User?    @relation(fields: [userId], references: [id])
+  cashier   Cashier? @relation(fields: [cashierId], references: [id])
+}
+
+model Order {
+  id           Int                @id @default(autoincrement())
+  customerId   Int
+  cashierId    Int?
+  totalAmount  Decimal
+  orderDate    DateTime           @default(now())
+  statusId     Int
+  userId       Int
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  orderDetails OrderDetail[]
+  Transaction  Transaction[]
+  user         User               @relation(fields: [userId], references: [id])
+  status       Transaction_status @relation(fields: [statusId], references: [id])
+  customer     Customer?          @relation(fields: [customerId], references: [id])
+  cashier      Cashier?           @relation(fields: [cashierId], references: [id])
+}
+
+model OrderDetail {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  subtotal  Decimal
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Transaction {
+  id              Int                 @id @default(autoincrement())
+  orderId         Int
+  paymentType     String
+  amount          Decimal
+  typeId          Int
+  statusId        Int
+  transactionDate DateTime            @default(now())
+  type            Transaction_type?   @relation(fields: [typeId], references: [id])
+  status          Transaction_status? @relation(fields: [statusId], references: [id])
+  order           Order               @relation(fields: [orderId], references: [id])
+}
+
+model Transaction_type {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id])
+  Transaction Transaction[]
+
+  @@map("transaction_type") // 
+}
+
+model Transaction_status {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id])
+  Transaction Transaction[]
+  Order       Order[]
+
+  @@map("transaction_status") // 
+}
+
+model Report {
+  id          Int         @id @default(autoincrement())
+  date        DateTime    @default(now())
+  totalSales  Decimal
+  totalOrders Int
+  Analytics   Analytics[]
+}
+
+model Analytics {
+  id       Int    @id @default(autoincrement())
+  reportId Int
+  trend    String
+  report   Report @relation(fields: [reportId], references: [id])
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  Int
+  productId Int?
+  author    User     @relation(fields: [authorId], references: [id])
+  Product   Product? @relation(fields: [productId], references: [id])
+}
+
+model Payment_Method {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@map("payment_method") // 
+}
