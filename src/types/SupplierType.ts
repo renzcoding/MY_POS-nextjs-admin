@@ -51,12 +51,6 @@ export interface SupplierContainerFormProps {
 } */
 
 export interface SupplierTableViewsProps {
-  // filterName: string;
-  // filterStatus: string;
-  // filterEmail: string;
-  // setFilterName: (name: string) => void;
-  // setFilterStatus: (status: string) => void;
-  // setFilterEmail: (email: string) => void;
   filters: {
     name: string;
     status: string;
@@ -73,6 +67,7 @@ export interface SupplierTableViewsProps {
     currentPage: number;
     setCurrentPage: (page: number) => void;
     totalPages: number;
+    setTotalPages: React.Dispatch<React.SetStateAction<number>>;
     showAll: boolean;
     setShowAll: (value: boolean) => void;
     limit: number;
@@ -83,6 +78,22 @@ export interface SupplierTableViewsProps {
     loading: boolean;
     setLoading: (value: boolean) => void;
     hasFetched: boolean;
+    selectedIds: number[];
+    setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
+  };
+  fetchSuppliers: () => void;
+  currentSegment: string;
+}
+
+export interface SupplierButtonSelectedProps {
+  tableState: {
+    data: SupplierInput[];
+    setData: (data: SupplierInput[]) => void;
+    loading: boolean;
+    setLoading: (value: boolean) => void;
+    hasFetched: boolean;
+    selectedIds: number[];
+    setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
   };
   fetchSuppliers: () => void;
   currentSegment: string;

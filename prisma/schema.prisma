@@ -13,90 +13,181 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                 Int                  @id @default(autoincrement())
-  firstname          String?
-  lastname           String?
-  username           String               @unique
-  email              String               @unique
-  password           String               @map("user_password")
-  role               String?
-  address            String?
-  position           String?
-  phone              String?
-  image              String?
-  status             String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  Post               Post[]
-  Payment_Method     Payment_Method[]
-  Order              Order[]
-  Product            Product[]
-  Product_Category   Product_Category[]
-  Supplier           Supplier[]
-  Customer           Customer[]
-  Transaction_type   Transaction_type[]
-  Transaction_status Transaction_status[]
-  Cashier            Cashier[]
-  Product_Condition  Product_Condition[]
-  Product_Size       Product_Size[]
-  Product_Type       Product_Type[]
-  Product_Unit       Product_Unit[]
-  Product_Weight     Product_Weight[]
-  Product_Images     Product_Images[]
-  Product_Variant    Product_Variant[]
+model Gender {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int
+  user        User?      @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Customer    Customer[]
+
+  @@map("gender") // 
 }
 
-model Product {
-  id                Int                @id @default(autoincrement())
-  name              String
-  categoryId        Int?
-  price_sales       Int?
-  price_purchase    Int?
-  tax_sales         Int?
-  tax_purchase      Int?
-  stock             Int?
-  supplierId        Int?
-  conditionId       Int?
-  unitId            Int?
-  sizeId            Int?
-  typeId            Int?
-  weight            Int?
-  barcode           String?
-  discount          String?
-  image             String?
-  description       String?
-  status            String?
-  userId            Int?
-  isActive          Boolean            @default(true)
-  isPopular         Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  category          Product_Category?  @relation(fields: [categoryId], references: [id])
-  condition         Product_Condition? @relation(fields: [conditionId], references: [id])
-  size              Product_Size?      @relation(fields: [sizeId], references: [id])
-  type              Product_Type?      @relation(fields: [typeId], references: [id])
-  unit              Product_Unit?      @relation(fields: [unitId], references: [id])
-  supplier          Supplier?          @relation(fields: [supplierId], references: [id])
-  user              User?              @relation(fields: [userId], references: [id])
-  OrderDetail       OrderDetail[]
-  Post              Post[]
-  Images            Product_Images[]
-  Product_Weight    Product_Weight?    @relation(fields: [product_WeightId], references: [id])
-  product_WeightId  Int?
-  Product_Variant   Product_Variant?   @relation(fields: [product_VariantId], references: [id])
-  product_VariantId Int?
+model Civil_Status {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int
+  user        User?      @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Customer    Customer[]
+
+  @@map("civil_status") // 
+}
+
+model Payment_Method {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@map("payment_method") // 
+}
+
+model Country {
+  id        Int        @id @default(autoincrement())
+  name      String
+  isoCode   String     @unique
+  flag      String?
+  phonecode String?
+  currency  String?
+  latitude  String?
+  longitude String?
+  timezones String?
+  states    State[]
+  Customer  Customer[]
+  Cashier   Cashier[]
+  Supplier  Supplier[]
+  User      User[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model State {
+  id          Int        @id @default(autoincrement())
+  name        String?
+  isoCode     String?    @unique
+  countryCode String?
+  countryId   Int?
+  latitude    String?
+  longitude   String?
+  country     Country?   @relation(fields: [countryId], references: [id])
+  cities      City[]
+  Customer    Customer[]
+  Cashier     Cashier[]
+  Supplier    Supplier[]
+  User        User[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model City {
+  id          Int        @id @default(autoincrement())
+  name        String
+  isoCode     String?    @unique
+  stateId     Int
+  countryCode String?
+  stateCode   String?
+  latitude    String?
+  longitude   String?
+  state       State      @relation(fields: [stateId], references: [id])
+  District    District[]
+  Customer    Customer[]
+  Cashier     Cashier[]
+  Supplier    Supplier[]
+  User        User[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+/**
+ * model Country {
+ * id        Int        @id @default(autoincrement())
+ * name      String
+ * code      String     @unique // e.g., US, ID
+ * State     State[]
+ * Customer  Customer[]
+ * Cashier   Cashier[]
+ * Supplier  Supplier[]
+ * User      User[]
+ * createdAt DateTime   @default(now())
+ * updatedAt DateTime   @updatedAt
+ * }
+ * model State {
+ * id        Int        @id @default(autoincrement())
+ * name      String
+ * code      String? // optional, e.g., CA for California
+ * countryId Int
+ * country   Country    @relation(fields: [countryId], references: [id])
+ * City      City[]
+ * Customer  Customer[]
+ * Cashier   Cashier[]
+ * Supplier  Supplier[]
+ * User      User[]
+ * createdAt DateTime   @default(now())
+ * updatedAt DateTime   @updatedAt
+ * }
+ * model City {
+ * id        Int        @id @default(autoincrement())
+ * name      String
+ * stateId   Int
+ * state     State      @relation(fields: [stateId], references: [id])
+ * District  District[]
+ * Customer  Customer[]
+ * Cashier   Cashier[]
+ * Supplier  Supplier[]
+ * User      User[]
+ * createdAt DateTime   @default(now())
+ * updatedAt DateTime   @updatedAt
+ * }
+ */
+
+model District {
+  id         Int          @id @default(autoincrement())
+  name       String
+  cityId     Int
+  city       City         @relation(fields: [cityId], references: [id])
+  PostalCode PostalCode[]
+  Customer   Customer[]
+  Cashier    Cashier[]
+  Supplier   Supplier[]
+  User       User[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model PostalCode {
+  id         Int        @id @default(autoincrement())
+  code       String // e.g., 90210
+  districtId Int
+  district   District   @relation(fields: [districtId], references: [id])
+  Customer   Customer[]
+  Cashier    Cashier[]
+  Supplier   Supplier[]
+  User       User[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("postal_code")
 }
 
 model Product_Category {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
   description String?
   userId      Int?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
+  user        User?      @relation(fields: [userId], references: [id])
+  Product     Product[]
+  Supplier    Supplier[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Product_Condition {
@@ -104,10 +195,10 @@ model Product_Condition {
   name        String    @unique
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_condition")
 }
@@ -117,10 +208,10 @@ model Product_Size {
   name        String    @unique
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_size") // 
 }
@@ -130,10 +221,10 @@ model Product_Type {
   name        String    @unique
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_type") // 
 }
@@ -143,10 +234,10 @@ model Product_Unit {
   name        String    @unique
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_unit") // 
 }
@@ -156,10 +247,10 @@ model Product_Weight {
   name        String    @unique
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_weight") // 
 }
@@ -171,10 +262,10 @@ model Product_Images {
   productId   Int?
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_images") // 
 }
@@ -187,79 +278,244 @@ model Product_Variant {
   image       Int?
   description String?
   userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  Product     Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  products    Product[]
-  user        User?     @relation(fields: [userId], references: [id])
 
   @@map("product_variant") // 
 }
 
+model Product {
+  id                  Int                @id @default(autoincrement())
+  name                String
+  price_sales         Int?
+  price_purchase      Int?
+  tax_sales           Int?
+  tax_purchase        Int?
+  stock               Int?
+  weight              Int?
+  supplierId          Int?
+  product_CategoryId  Int?
+  product_ConditionId Int?
+  product_SizeId      Int?
+  product_TypeId      Int?
+  product_UnitId      Int?
+  product_ImagesId    Int?
+  product_WeightId    Int?
+  product_VariantId   Int?
+  barcode             String?
+  discount            String?
+  image               String?
+  description         String?
+  status              String?
+  userId              Int?
+  isActive            Boolean            @default(true)
+  isPopular           Boolean            @default(false)
+  Product_Category    Product_Category?  @relation(fields: [product_CategoryId], references: [id])
+  Product_Condition   Product_Condition? @relation(fields: [product_ConditionId], references: [id])
+  Product_Size        Product_Size?      @relation(fields: [product_SizeId], references: [id])
+  Product_Type        Product_Type?      @relation(fields: [product_TypeId], references: [id])
+  Product_Unit        Product_Unit?      @relation(fields: [product_UnitId], references: [id])
+  Product_Weight      Product_Weight?    @relation(fields: [product_WeightId], references: [id])
+  Product_Images      Product_Images?    @relation(fields: [product_ImagesId], references: [id])
+  Product_Variant     Product_Variant?   @relation(fields: [product_VariantId], references: [id])
+  User                User?              @relation(fields: [userId], references: [id])
+  Supplier            Supplier?          @relation(fields: [supplierId], references: [id])
+  OrderDetail         OrderDetail[]
+  Post                Post[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  firstname          String?
+  lastname           String?
+  username           String               @unique
+  email              String               @unique
+  password           String               @map("user_password")
+  role               String?
+  address            String?
+  countryId          Int?
+  stateId            Int?
+  cityId             Int?
+  districtId         Int?
+  postalCodeId       Int?
+  position           String?
+  phone              String?
+  image              String?
+  status             String?
+  Gender             Gender[]
+  Civil_Status       Civil_Status[]
+  Product_Category   Product_Category[]
+  Product_Condition  Product_Condition[]
+  Product_Size       Product_Size[]
+  Product_Type       Product_Type[]
+  Product_Unit       Product_Unit[]
+  Product_Weight     Product_Weight[]
+  Product_Images     Product_Images[]
+  Product_Variant    Product_Variant[]
+  Product            Product[]
+  Cashier            Cashier[]
+  Supplier           Supplier[]
+  Customer           Customer[]
+  Membership_type    Membership_type[]
+  Order              Order[]
+  Transaction_type   Transaction_type[]
+  Transaction_status Transaction_status[]
+  Post               Post[]
+  Payment_Method     Payment_Method[]
+  Country            Country?             @relation(fields: [countryId], references: [id])
+  State              State?               @relation(fields: [stateId], references: [id])
+  City               City?                @relation(fields: [cityId], references: [id])
+  District           District?            @relation(fields: [districtId], references: [id])
+  PostalCode         PostalCode?          @relation(fields: [postalCodeId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
 model Cashier {
-  id        Int        @id @default(autoincrement())
-  name      String?
-  username  String?
-  email     String     @unique
-  password  String
-  phone     String?
-  address   String?
-  contact   String?
-  status    String?
-  userId    Int?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  user      User?      @relation(fields: [userId], references: [id])
-  orders    Order[] // Optional: if each order is linked to a cashier
-  Customer  Customer[]
+  id           Int         @id @default(autoincrement())
+  name         String?
+  username     String?
+  email        String      @unique
+  password     String
+  barcode      String?
+  mobile       String?
+  telp         String?
+  contact      String?
+  fax          String?
+  address      String?
+  countryId    Int?
+  stateId      Int?
+  districtId   Int?
+  postalCodeId Int?
+  cityId       Int?
+  status       String?
+  userId       Int?
+  User         User?       @relation(fields: [userId], references: [id])
+  Customer     Customer[]
+  Order        Order[]
+  Country      Country?    @relation(fields: [countryId], references: [id])
+  State        State?      @relation(fields: [stateId], references: [id])
+  City         City?       @relation(fields: [cityId], references: [id])
+  District     District?   @relation(fields: [districtId], references: [id])
+  PostalCode   PostalCode? @relation(fields: [postalCodeId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Supplier {
-  id        Int       @id @default(autoincrement())
-  name      String?
-  email     String    @unique
-  phone     String?
-  address   String?
-  contact   String?
-  status    String?
-  userId    Int?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-  user      User?     @relation(fields: [userId], references: [id])
+  id                 Int               @id @default(autoincrement())
+  name               String?
+  email              String            @unique
+  phone              String?
+  mobile             String?
+  telp               String?
+  contact            String?
+  fax                String?
+  position           String?
+  address            String?
+  product_CategoryId Int?
+  countryId          Int?
+  stateId            Int?
+  cityId             Int?
+  districtId         Int?
+  postalCodeId       Int?
+  status             String?
+  userId             Int?
+  Product            Product[]
+  User               User?             @relation(fields: [userId], references: [id])
+  Product_Category   Product_Category? @relation(fields: [product_CategoryId], references: [id])
+  Country            Country?          @relation(fields: [countryId], references: [id])
+  State              State?            @relation(fields: [stateId], references: [id])
+  City               City?             @relation(fields: [cityId], references: [id])
+  District           District?         @relation(fields: [districtId], references: [id])
+  PostalCode         PostalCode?       @relation(fields: [postalCodeId], references: [id])
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  phone     String?
-  address   String?
-  userId    Int?
-  cashierId Int?
-  status    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
-  user      User?    @relation(fields: [userId], references: [id])
-  cashier   Cashier? @relation(fields: [cashierId], references: [id])
+  id                    Int              @id @default(autoincrement())
+  name                  String?
+  firstname             String?
+  lastname              String?
+  birthday              DateTime?
+  genderId              Int?
+  civil_StatusId        Int?
+  nationality           Int?
+  email                 String           @unique
+  phone                 String?
+  mobile                String?
+  telp                  String?
+  fax                   String?
+  address               String?
+  cityId                Int?
+  stateId               Int?
+  countryId             Int?
+  districtId            Int?
+  postalCodeId          Int?
+  companyName           String?
+  companyAddress        String?
+  companyCityId         Int?
+  companyStateId        Int?
+  companyContryId       Int?
+  companypostalCodeId   Int?
+  membership_typeId     Int?
+  alternativeCustomerId String?
+  cashierId             Int?
+  startDate             DateTime?
+  expiryDate            DateTime?
+  taxNumber             String?
+  notes                 String?
+  status                String?
+  userId                Int?
+  Gender                Gender?          @relation(fields: [genderId], references: [id])
+  Civil_Status          Civil_Status?    @relation(fields: [civil_StatusId], references: [id])
+  Country               Country?         @relation(fields: [countryId], references: [id])
+  State                 State?           @relation(fields: [stateId], references: [id])
+  City                  City?            @relation(fields: [cityId], references: [id])
+  District              District?        @relation(fields: [districtId], references: [id])
+  PostalCode            PostalCode?      @relation(fields: [postalCodeId], references: [id])
+  User                  User?            @relation(fields: [userId], references: [id])
+  Cashier               Cashier?         @relation(fields: [cashierId], references: [id])
+  Membership_type       Membership_type? @relation(fields: [membership_typeId], references: [id])
+  Order                 Order[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+}
+
+model Membership_type {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  userId      Int
+  User        User       @relation(fields: [userId], references: [id])
+  Customer    Customer[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("membership_type") // 
 }
 
 model Order {
-  id           Int                @id @default(autoincrement())
-  customerId   Int
-  cashierId    Int?
-  totalAmount  Decimal
-  orderDate    DateTime           @default(now())
-  statusId     Int
-  userId       Int
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  orderDetails OrderDetail[]
-  Transaction  Transaction[]
-  user         User               @relation(fields: [userId], references: [id])
-  status       Transaction_status @relation(fields: [statusId], references: [id])
-  customer     Customer?          @relation(fields: [customerId], references: [id])
-  cashier      Cashier?           @relation(fields: [cashierId], references: [id])
+  id                   Int                 @id @default(autoincrement())
+  customerId           Int
+  cashierId            Int?
+  totalAmount          Decimal
+  orderDate            DateTime            @default(now())
+  transaction_statusId Int?
+  userId               Int
+  User                 User                @relation(fields: [userId], references: [id])
+  Cashier              Cashier?            @relation(fields: [cashierId], references: [id])
+  Customer             Customer            @relation(fields: [customerId], references: [id])
+  OrderDetail          OrderDetail[]
+  Transaction          Transaction[]
+  Transaction_status   Transaction_status? @relation(fields: [transaction_statusId], references: [id])
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 }
 
 model OrderDetail {
@@ -268,21 +524,8 @@ model OrderDetail {
   productId Int
   quantity  Int
   subtotal  Decimal
-  order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-model Transaction {
-  id              Int                 @id @default(autoincrement())
-  orderId         Int
-  paymentType     String
-  amount          Decimal
-  typeId          Int
-  statusId        Int
-  transactionDate DateTime            @default(now())
-  type            Transaction_type?   @relation(fields: [typeId], references: [id])
-  status          Transaction_status? @relation(fields: [statusId], references: [id])
-  order           Order               @relation(fields: [orderId], references: [id])
+  Product   Product @relation(fields: [productId], references: [id])
+  Order     Order   @relation(fields: [orderId], references: [id])
 }
 
 model Transaction_type {
@@ -290,10 +533,10 @@ model Transaction_type {
   name        String
   description String
   userId      Int
+  User        User          @relation(fields: [userId], references: [id])
+  Transaction Transaction[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  user        User          @relation(fields: [userId], references: [id])
-  Transaction Transaction[]
 
   @@map("transaction_type") // 
 }
@@ -303,13 +546,26 @@ model Transaction_status {
   name        String
   description String
   userId      Int
+  User        User          @relation(fields: [userId], references: [id])
+  Order       Order[]
+  Transaction Transaction[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  user        User          @relation(fields: [userId], references: [id])
-  Transaction Transaction[]
-  Order       Order[]
 
   @@map("transaction_status") // 
+}
+
+model Transaction {
+  id                   Int                 @id @default(autoincrement())
+  orderId              Int
+  paymentType          String
+  amount               Decimal
+  transaction_typeId   Int?
+  transaction_statusId Int?
+  transactionDate      DateTime            @default(now())
+  Order                Order               @relation(fields: [orderId], references: [id])
+  Transaction_type     Transaction_type?   @relation(fields: [transaction_typeId], references: [id])
+  Transaction_status   Transaction_status? @relation(fields: [transaction_statusId], references: [id])
 }
 
 model Report {
@@ -336,16 +592,4 @@ model Post {
   productId Int?
   author    User     @relation(fields: [authorId], references: [id])
   Product   Product? @relation(fields: [productId], references: [id])
-}
-
-model Payment_Method {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  userId      Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User?    @relation(fields: [userId], references: [id])
-
-  @@map("payment_method") // 
 }

@@ -1,14 +1,19 @@
 "use client";
 import ComponentCard from "@/components/common/ComponentCard";
-import { SuplierFormViews, SupplierFormHandle } from "./SuplierFormViews";
 import { useEffect, useRef, useState } from "react";
 import Alert from "@/components/ui/alert/Alert";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { SupplierActionViewsProps } from "@/types/supplierType";
+import { SupplierActionViewsProps } from "@/types/SupplierType";
+import { SuplierFormViews } from "./SuplierFormViews";
+import { GlobalFormHandleProps } from "@/types/GlobalType";
+import {
+  getCurrentSegment,
+  getDataByIdToFormEdit,
+} from "@/utlils/globalFunctions";
 
 export const SupplierActionViews = ({ mode, id }: SupplierActionViewsProps) => {
-  const formRef = useRef<SupplierFormHandle>(null);
+  const formRef = useRef<GlobalFormHandleProps>(null);
   const [defaultValues, setDefaultValues] = useState<any>(null);
   const { push } = useRouter();
   const [alert, setAlert] = useState<{
@@ -17,27 +22,15 @@ export const SupplierActionViews = ({ mode, id }: SupplierActionViewsProps) => {
     message: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const currentSegment = getCurrentSegment();
+
+  const fetchSupplier = async () => {
+    await getDataByIdToFormEdit({ id, mode, formRef, currentSegment });
+  };
+
+  console.log(fetchSupplier);
 
   useEffect(() => {
-    const fetchSupplier = async () => {
-      if (mode === "edit" && id) {
-        const res = await fetch(`/api/supplier/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (formRef.current) {
-            formRef.current?.setValues({
-              name: data.name,
-              email: data.email,
-              phone: data.phone,
-              address: data.address,
-            });
-          }
-        } else {
-          toast.error("Failed to fetch supplier data");
-        }
-      }
-    };
-
     fetchSupplier();
   }, [mode, id]);
 
@@ -109,7 +102,7 @@ export const SupplierActionViews = ({ mode, id }: SupplierActionViewsProps) => {
       )}
       <ComponentCard
         title="Supplier Form"
-        action={mode === "create" ? "created" : "updated"}
+        // action={mode === "create" ? "created" : "updated"}
         onSubmit={handleSave}
       >
         <SuplierFormViews ref={formRef} defaultValues={defaultValues} />

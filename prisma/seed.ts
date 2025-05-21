@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { Country, State, City } from "country-state-city";
 
 const prisma = new PrismaClient();
 
@@ -51,7 +52,7 @@ async function main() {
         price_sales: 5.99,
         price_purchase: 1.99,
         stock: 50,
-        categoryId: 1,
+        product_CategoryId: 1,
         supplierId: supplier.id,
         userId: 1,
       },
@@ -60,7 +61,7 @@ async function main() {
         price_sales: 9.99,
         price_purchase: 1.99,
         stock: 30,
-        categoryId: 2,
+        product_CategoryId: 2,
         supplierId: supplier.id,
         userId: 1,
       },
@@ -69,7 +70,7 @@ async function main() {
         price_sales: 1.99,
         price_purchase: 1.99,
         stock: 100,
-        categoryId: 1,
+        product_CategoryId: 1,
         supplierId: supplier.id,
         userId: 1,
       },
@@ -78,7 +79,7 @@ async function main() {
         price_sales: 2.99,
         price_purchase: 1.99,
         stock: 40,
-        categoryId: 3,
+        product_CategoryId: 3,
         supplierId: supplier.id,
         userId: 1,
       },
@@ -119,13 +120,13 @@ async function main() {
     data: {
       customerId: customer.id,
       totalAmount: 15.97,
-      orderDetails: {
+      OrderDetail: {
         create: [
           { productId: 1, quantity: 2, subtotal: 11.98 },
           { productId: 3, quantity: 2, subtotal: 3.98 },
         ],
       },
-      statusId: transactionStatus.id,
+      transaction_statusId: transactionStatus.id,
       userId: 1,
     },
   });
@@ -136,8 +137,8 @@ async function main() {
       orderId: order.id,
       paymentType: "Cash",
       amount: 15.97,
-      typeId: 1,
-      statusId: transactionStatus.id,
+      transaction_typeId: 1,
+      transaction_statusId: transactionStatus.id,
     },
   });
 
@@ -159,6 +160,41 @@ async function main() {
   });
 
   console.log("✅ Seed data created successfully!");
+
+  const countries = Country.getAllCountries();
+
+  for (const c of countries) {
+    // limit to 10 countries for example
+    const createdCountry = await prisma.country.create({
+      data: {
+        name: c.name,
+        isoCode: c.isoCode,
+      },
+    });
+
+    const states = State.getStatesOfCountry(c.isoCode);
+    for (const s of states) {
+      const createdState = await prisma.state.create({
+        data: {
+          name: s.name,
+          isoCode: s.isoCode,
+          countryId: createdCountry.id,
+        },
+      });
+
+      const cities = City.getCitiesOfState(c.isoCode, s.isoCode);
+      for (const city of cities) {
+        await prisma.city.create({
+          data: {
+            name: city.name,
+            stateId: createdState.id,
+          },
+        });
+      }
+    }
+  }
+
+  console.log("Seed completed successfully!");
 }
 
 main()

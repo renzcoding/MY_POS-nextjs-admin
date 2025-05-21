@@ -1,3 +1,4 @@
+import cleanBodyPost from "@/lib/cleanBodyPost";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -68,8 +69,40 @@ export const GET = async (
   if (!table)
     return NextResponse.json({ error: "Table not found" }, { status: 400 });
 
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const skip = (page - 1) * limit;
+
+  const showAll = searchParams.get("showAll") === "true";
+  const name = searchParams.get("name");
+  const status = searchParams.get("status");
+  const email = searchParams.get("email");
+  const orderBy = searchParams.get("orderBy");
+  const orderDirection = searchParams.get("orderDirection");
+  const whereConditions: string[] = [];
+  const queryParams: any[] = [];
+
+  if (name) {
+    whereConditions.push(`name LIKE ?`);
+    queryParams.push(`%${name}%`);
+  }
+  if (email) {
+    whereConditions.push(`email LIKE ?`);
+    queryParams.push(`%${email}%`);
+  }
+  if (status) {
+    whereConditions.push(`status = ?`);
+    queryParams.push(status);
+  }
+  const whereClause =
+    whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+  const orderClause = orderBy
+    ? `ORDER BY ${orderBy} ${orderDirection === "desc" ? "DESC" : "ASC"}`
+    : "";
+
   try {
-    const result = await prisma.$queryRawUnsafe(`
+    const query = `
       SELECT 
         id, 
         name, 
@@ -78,12 +111,21 @@ export const GET = async (
         DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt,
         DATE_FORMAT(updatedAt, '%Y-%m-%d %H:%i:%s') as updatedAt
       FROM ${table}
-    `);
+      ${whereClause}
+      ${orderClause}
+      LIMIT ? OFFSET ?
+    `;
+    queryParams.push(limit, skip);
+    const data: any = await prisma.$queryRawUnsafe(query, ...queryParams);
+    const total = data.length;
 
     // console.log("Result:", result);
     return NextResponse.json(
       {
-        result,
+        data,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
         message: `Success fetching products ${segment?.length ? segment[0] : ""} data`,
         status: 200,
       },
@@ -115,8 +157,9 @@ export const POST = async (
     return NextResponse.json({ error: "Table not found" }, { status: 400 });
 
   const body = await req.json();
-  const keys = Object.keys(body).join(", ");
-  const values = Object.values(body)
+  const cleanBody = cleanBodyPost(body);
+  const keys = Object.keys(cleanBody).join(", ");
+  const values = Object.values(cleanBody)
     .map((v) => `'${v}'`)
     .join(", ");
   try {

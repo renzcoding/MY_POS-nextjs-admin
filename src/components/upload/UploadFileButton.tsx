@@ -5,24 +5,23 @@ import { useRef, useState } from "react";
 import Button from "../ui/button/Button";
 import { BoxIcon } from "@/icons";
 import { parseExcelToJSON } from "@/utlils/parseExcelToJSON";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface UploadButtonProps {
   setLoading?: (loading: boolean) => void;
   onDataImported?: () => void; // Callback function to notify the parent about successful import
+  currentSegment?: string;
 }
 
 export default function UploadButton({
   setLoading,
   onDataImported,
+  currentSegment,
 }: UploadButtonProps) {
   const hiddenFileInput = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const [field, setField] = useState("");
-  const pathname = usePathname(); // e.g., '/admin/tester'
-  const segments = pathname.split("/").filter(Boolean); // ['admin', 'tester']
-  const currentSegment = segments[segments.length - 1]; // 'tester'
 
   const handleButtonClick = () => {
     console.log("test clisckk");
@@ -40,7 +39,7 @@ export default function UploadButton({
       const jsonData = await parseExcelToJSON(file);
 
       // Step 1: Import data
-      const importRes = await fetch(`/api/supplier/import`, {
+      const importRes = await fetch(`/api/${currentSegment}/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ suppliers: jsonData }),
@@ -60,10 +59,12 @@ export default function UploadButton({
       //   // Step 3: Pass updated list to parent
       onDataImported?.();
       setTimeout(() => {
-        router.replace(`/admin/supplier?success=Import complete successfully`);
+        router.replace(
+          `/admin/${currentSegment}?success=Import complete successfully`,
+        );
       }, 2000);
     } catch (error) {
-      console.log("Failed to fetch suppliers", error);
+      console.log(`Failed to fetch data ${currentSegment}s`, error);
     } finally {
       setLoading?.(false);
     }

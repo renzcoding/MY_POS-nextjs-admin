@@ -59,6 +59,7 @@ export const GET = async (req: Request) => {
 export const POST = async (req: Request) => {
   const body: SupplierFormValuesType = await req.json();
   const { name, email, address, phone, userId } = body;
+  const status = "Active";
 
   if (!name || !email || !address || !phone) {
     return NextResponse.json(
@@ -83,6 +84,7 @@ export const POST = async (req: Request) => {
         email,
         address,
         phone,
+        status,
         userId,
       },
     });
